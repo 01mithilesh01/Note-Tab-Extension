@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Note Tab Extension</title>
+        <meta charset="utf-8">
+        <style>
+            /*Extension Style*/
+            html, body{
+                height: 100%;
+                min-width: 100%;
+                margin: 0;
+                padding: 0;
+                font-size: 100%;
+            }
+            h1{
+                font-family: 'Playfair Display', Georgia, serif;
+                font-weight: 900;
+            }
+            body{
+                background: #f7fafc;
+                color : #4a5568;
+
+            }
+            body.dark{
+                color: #f7fafc;
+                background: #4a5568;
+            }
+            div.main{
+                display: flex;
+                height: 100%;
+            }
+            aside.sidebar{
+                width: 300px;
+                background: #edf2f7;
+                height: 100%;
+                padding: 25px;
+            }
+            .dark aside.sidebar{
+                background: #718096;
+            }
+            section.holder{
+                width: -webkit-fill-available;
+                height: 100%;
+                padding: 25px;
+            }
+            div.icon{
+                height: 30px;
+                width: 30px;
+                line-height: 30px;
+                font-size: 28px;
+            }
+            .holder div.icon{
+                cursor: pointer;
+            }
+            /* focus is a selector used to select an element which accept keyboard events or user input or  */
+            [contenteditable]:focus{
+                outline: 0px solid transparent; /* outline is used to hide the dot border produced by conteteditable */
+            }
+            [placeholder]:empty:before{
+                content: attr(placeholder);
+                color:blue;
+                opacity:0.5;
+                cursor:text; /* When the user will keep the mouse pointer on the text, the mouse pointer will
+                              turn into a symbol of I. */
+            }
+            [placeholder]:empty:focus:before{
+                content: "";
+            }
+            
+
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <aside class="sidebar">
+                <div class="icon">✏️</div>
+                <h1>New Note Tab</h1>
+                <div class="newNote">➕ New Note</div>
+                <div class="pages-holder"></div>
+            </aside>
+            <section class="holder">
+                <div class="icon">📑</div>
+                <div class="action">
+                    <!-- TO DO - Add save/delete button -->
+                </div>
+                <!-- contenteditable is an attribute used so that the user can change the text of h1 and
+                     div from the front-end -->
+                <h1 contenteditable="true" placeholder="Untitled"></h1>
+                <div class="post-body" contenteditable="true" placeholder="Write note here..."></div>
+            </section>
+        </div>
+        
+        
+        <script src="app.js"></script>
+    </body>
+</html>
