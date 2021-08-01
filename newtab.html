@@ -15,6 +15,8 @@
             h1{
                 font-family: 'Playfair Display', Georgia, serif;
                 font-weight: 900;
+                padding-top: 3px;
+                padding-left: 3px;
             }
             body{
                 background: #f7fafc;
@@ -54,35 +56,93 @@
             }
             /* focus is a selector used to select an element which accept keyboard events or user input or  */
             [contenteditable]:focus{
+                padding-top: 3px;
+                padding-left: 3px;
                 outline: 0px solid transparent; /* outline is used to hide the dot border produced by conteteditable */
             }
+            .h1 [contenteditable]:focus{
+                padding-top: 5px;
+            }
             [placeholder]:empty:before{
+                
                 content: attr(placeholder);
-                color:blue;
+                color: inherit;
                 opacity:0.5;
                 cursor:text; /* When the user will keep the mouse pointer on the text, the mouse pointer will
                               turn into a symbol of I. */
             }
-            [placeholder]:empty:focus:before{
+            [placeholder]:empty:focus:before{                
                 content: "";
             }
-            
+
+            ul{
+                padding: 0;
+                margin: 0;
+                list-style: none;
+            }
+            .newNote, ul li{
+                padding-top: 5px;
+                padding-bottom: 5px;
+                cursor: pointer;
+                padding-left: 5px;
+            }
+            .newNote:hover, ul li.active, ul li:hover{
+                background-color: rgba(0,0,0,0.5);
+            }
+
+            .deletePage{
+                margin-right: 15px;
+
+            }
+            .savePage, .deletePage{
+                float: right;
+                padding: 10px 20px;
+                background: transparent;
+                border-radius: 3px;
+                border: 2px solid;
+                color: white;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 4px;
+                cursor:pointer
+            }
+
+            .savePage:hover, .deletePage:hover{
+                background: white;
+                padding: 10px 20px;
+                color: #4a5568;
+                border-radius: 3px;
+                border: 2px solid white;
+                
+            }
+            .hidden{
+                display: none;
+            }
+            .post-body{
+                min-height: 100px;
+                width: 100%;
+                padding-left: 3px;
+                padding-top: 3px;
+            }
+
 
         </style>
     </head>
-    <body>
+    <body class="dark">
         <div class="main">
             <aside class="sidebar">
                 <div class="icon">✏️</div>
-                <h1>New Note Tab</h1>
+                <h2>New Note Tab</h2>
                 <div class="newNote">➕ New Note</div>
                 <div class="pages-holder"></div>
             </aside>
             <section class="holder">
                 <div class="icon">📑</div>
-                <div class="action">
+                
                     <!-- TO DO - Add save/delete button -->
-                </div>
+                <button class="savePage hidden">Save</button>
+                <button class="deletePage hidden">Delete</button>
+                
                 <!-- contenteditable is an attribute used so that the user can change the text of h1 and
                      div from the front-end -->
                 <h1 contenteditable="true" placeholder="Untitled"></h1>

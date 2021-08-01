@@ -1,7 +1,9 @@
 /// App.js    
+
 window.firstOpen = false;
-function fetchNotes()
+function fetchNote()
 {
+    console.log("hi");
     // fetch notes from database
     document.querySelector('.pages-holder').innerHTML='';
     chrome.runtime.sendMessage({command: "fetchNotes", data: {notes: ''}}, function(response){
@@ -9,49 +11,223 @@ function fetchNotes()
         var notes = response.data;
         var nav = '<ul>';
         window.notes = [];
+        if(notes == null)
+            document.querySelector('.savePage').style.display='block';
         for(const noteId in notes)
         {
             nav += '<li data-noteId="'+noteId+'">'+notes[noteId].icon+' '+notes[noteId].title+'</li>';
+            
             window.notes[noteId] = notes[noteId];
         }
+        
         nav += '</ul>';
         document.querySelector('.pages-holder').innerHTML = nav;
+
+        // listen for clicks
+        listenForClick();
     });
-    // listen for clicks
-    listenForClick();
+    
+}
+function fetchNote(noteId)
+{
+    console.log("hi");
+    // fetch notes from database
+    document.querySelector('.pages-holder').innerHTML='';
+    chrome.runtime.sendMessage({command: "fetchNotes", data: {notes: ''}}, function(response){
+        // listen for a response
+        var notes = response.data;
+        var nav = '<ul>';
+        window.notes = [];
+        if(notes == null)
+            document.querySelector('.savePage').style.display='block';
+        for(const noteId in notes)
+        {
+            nav += '<li data-noteId="'+noteId+'">'+notes[noteId].icon+' '+notes[noteId].title+'</li>';
+            
+            window.notes[noteId] = notes[noteId];
+        }
+        
+        nav += '</ul>';
+        document.querySelector('.pages-holder').innerHTML = nav;
+        // listen for clicks
+        listenForClick();
+        changePage(noteId);
+        
+        
+    });
+    
 }
 
-fetchNotes();
-function clearNotes()
+fetchNote();
+function clearNote()
 {
     // clear note variable and action
+    // when '+New Note' in clicked, it means the user want to create a new note.So, it will display 'Untitled' and 'Write note here' and a save button. We DONT want to display the delete button because this note is just created and is not saved till now.
+    console.log("h1");
+    document.querySelector('.savePage').style.display='block';
+    document.querySelector('.deletePage').style.display='none';
+    
+
+    // We replace the innerText of icon, h1 and post-bod with 📑, '' and ''. So, that the placeholders('Untitled' and 'write note here') would be displayed. 
+    document.querySelector('.holder .icon').innerText='📑';
+    document.querySelector('.holder h1').innerText='';
+    document.querySelector('.holder .post-body').innerText='';
+
+    // remove the attribute 'data-noteid' of the previous note.
+    document.querySelector('.holder h1').removeAttribute('data-noteid');
 }
+
+
 function changePage(noteId)
 {
     // change selected note
+
+    // When a particular note is clicked in the left column, this function is called and this function receives the noteId of that particular function.
+    // Now the task is to displa the icon, title and body of that particular note clicked.
+
+    //object created for that particular noteId.
+    var obj = window.notes[noteId];
+
+    // innerText of the icon class is changed to icon of the note which is selected and it automatically gets displayed once it is changed. 
+    document.querySelector('.holder .icon').innerText = obj.icon;
+
+    // innerText of the h1 element is changed to title of the note which is selected and it automatically gets displayed once it is changed. 
+    document.querySelector('.holder h1').innerText = obj.title;
+
+    // the current notid is replaced with the noteid of the element selected. 
+    document.querySelector('.holder h1').dataset.noteid = noteId;
+
+    // innerText of the .post-body class is changed to body of the note which is selected and it automatically gets displayed once it is changed. 
+    document.querySelector('.holder .post-body').innerHTML = obj.body;
+
+    
+
+    // we want to highlight the note which is clicked in the left column, so first we need to remove the highlight of the current note. So, all the ul li elements are selected and one which is active , it is deactivated.
+    var lis = document.querySelectorAll('ul li');
+    for(var i=0;i<lis.length; i++)
+    {
+        try
+        {
+            lis[i].classList.remove('active');
+        }
+        catch(e)
+        {
+            
+        }
+    }
+
+    // when we click and open a particular note by clicking in left column, the note which is clicked gets higlighted.
+    document.querySelector('ul li[data-noteid="'+noteId+'"]').className='active';
+    
+    // displaying the save and delete button.
+    document.querySelector('.savePage').style.display='block';
+    document.querySelector('.deletePage').style.display='block';
+
+    // when then new tab is opened, the new tab should display same contentof last closed tab.
+    localStorage.setItem('_notes_lastOPenPage', noteId);
+    
 }
-function savePage(id, title, icon, body)
+
+
+// Set click eventListener (Only called once per page)
+document.querySelector('.newNote').addEventListener('click',function(){
+    clearNote();
+});
+
+// DELETE BUTTON- adding eventlistener to the delete button.
+document.querySelector('.deletePage').addEventListener('click', function(){
+    var id = false;
+    try
+    {
+        id = document.querySelector('.holder h1').dataset.noteid;
+    }
+    catch(e)
+    {
+    }
+    if(id != false)
+    {
+        var confirm = window.confirm('Are you sure you want to delete this note?');
+        if(confirm)
+        {
+            chrome.runtime.sendMessage({command : "deleteNote", data: {id: id}}, function(response){
+                fetchNote();
+                clearNote();
+
+            });
+        }
+    }
+});
+
+// SAVE PAGE- adding eventlistener to the delete button.
+document.querySelector('.savePage').addEventListener('click', function(){
+    var icon = document.querySelector('.holder .icon').innerText;
+    var title = document.querySelector('.holder h1').innerText;
+    var body = document.querySelector('.holder .post-body').innerHTML;
+    var id = document.querySelector('.holder h1').dataset.noteid;
+    savePage(id, icon, title, body);
+
+});
+
+
+function savePage(id, icon, title, body)
 {
-    // Save note to database.
+    
+    if(!title) // if title is empty
+    {
+        alert("Enter title");
+        return false;
+    }
+    if(id == undefined)
+    {
+        id = 'AUTO GENERATE';
+    }
+    else
+    {
+        window.notes[id].title = title;
+        window.notes[id].icon = icon;
+        window.notes[id].body = body;
+        document.querySelector('ul li[data-noteid="'+id+'"]').innerText = icon+' '+title;        
+    }
+    chrome.runtime.sendMessage({command: "postNote", data: {id: id, title: title, body: body, icon: icon}}, function(response){
+        try{
+            
+            var obj = response;
+            document.querySelector('.holder h1').dataset.noteid=obj.id;
+            localStorage.setItem('_notes_lastOpenPage', obj.id);
+            document.querySelector('.deletePage').style.display='block';
+            
+            fetchNote(obj.id);
+            
+            //document.querySelector('ul li[data-noteid="'+obj.id+'"]').className='active';
+            
+        }
+        catch(e){
+            console.log(e);
+        }
+    });
 }
+
+
 function listenForClick()
 {
-    // selecting all the li elements of pagesholder class in newtab.html
-    var lis = document.querySelector('.pages-holder ul li');
-
+    
+    var lis = document.querySelectorAll('.pages-holder ul li');
     // adding eventlistener to all the li elements
     for(var i=0; i<lis.length; i++)
     {
-        lis[i]=addEventListener('click', function(){
-            changePage(this.dataset.noteId);
+        lis[i].addEventListener('click', function(){
+            changePage(this.dataset.noteid);
         });
     }
-    if(windowfirstOpen == false){
+    if(window.firstOpen == false)
+    {
         window.firstOpen = true;
         try{
             var openNote = localStorage.getItem('_notes_lastOpenPage');
-            if(openNote != ''){
-                document.querySelector('ul li|data-noteId="'+openNote+'"|').click();
+
+            if(openNote != '')
+            {
+                document.querySelector('ul li[data-noteid="'+openNote+'"]').click();
             }
         }
         catch(e)
@@ -68,7 +244,12 @@ function listenForClick()
 
 
 
-    /**
+
+
+
+
+
+/**
  * Skipped minification because the original files appears to be already minified.
  * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
  */
@@ -103,5 +284,11 @@ window.addEventListener('DOMContentLoaded', function(){
     button.innerText = emoji;
     });
 });
+
+
+
+
+
+
 
 
